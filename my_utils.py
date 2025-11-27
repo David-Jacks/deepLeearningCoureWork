@@ -2,22 +2,54 @@
 
 import pickle as pk
 import numpy as np
+import os
+
+
 
 # function to to extract data from dataset and filter samples to contain only the first 5 classes.
 def filterSample(data_path: str):
-    with open(data_path, "rb") as fo:
-        img_dict = pk.load(fo, encoding="bytes")
-    image_data = img_dict[b'data']
-    image_label = img_dict[b'labels']
     new_img_data = []
     new_img_label = []
-#   myDict = {}
-# and then filter it so that i deal with features relating to the the label 0, 1, 2, 3, 4
-    for i in range(len(image_label)):
-        if image_label[i] <= 4:
-            new_img_data.append(image_data[i])
-            new_img_label.append(image_label[i])
-    return (np.array(new_img_data), new_img_label)
+
+    base_name = os.path.basename(data_path)
+
+    # Single test batch
+    if "test_batch" in base_name:
+        with open(data_path, "rb") as fo:
+            img_dict = pk.load(fo, encoding="bytes")
+        image_data = img_dict[b'data']
+        image_label = img_dict[b'labels']
+        for i in range(len(image_label)):
+            if image_label[i] <= 4:
+                new_img_data.append(image_data[i])
+                new_img_label.append(image_label[i])
+    # Collect all five training data_batch_1..5 from same directory
+    elif "data_batch" in base_name:
+        dirn = os.path.dirname(data_path)
+        for idx in range(1, 6):
+            file_path = os.path.join(dirn, f"data_batch_{idx}")
+            with open(file_path, "rb") as fo:
+                img_dict = pk.load(fo, encoding="bytes")
+            image_data = img_dict[b'data']
+            image_label = img_dict[b'labels']
+            for j in range(len(image_label)):
+                if image_label[j] <= 4:
+                    new_img_data.append(image_data[j])
+                    new_img_label.append(image_label[j])
+    else:
+        # Fallback: try to open the given path as a single batch file
+        with open(data_path, "rb") as fo:
+            img_dict = pk.load(fo, encoding="bytes")
+        image_data = img_dict[b'data']
+        image_label = img_dict[b'labels']
+        for i in range(len(image_label)):
+            if image_label[i] <= 4:
+                new_img_data.append(image_data[i])
+                new_img_label.append(image_label[i])
+    # normalising my training data within the range of 0 to 1, because the pixel values ranges from 0 to 255
+    new_img_data = np.array(new_img_data, dtype=np.float32) / 255
+    new_img_label = np.array(new_img_label, dtype=np.int64)
+    return new_img_data, new_img_label
 
  
 
@@ -54,3 +86,5 @@ def loss_fnc(pred_res, act_res):
 
     loss_value = -np.log(pred_res[range(len(pred_res)), act_res])
     return np.mean(loss_value)
+
+

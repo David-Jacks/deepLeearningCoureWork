@@ -1,0 +1,94 @@
+# Python general
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+pip-wheel-metadata/
+
+# Conda / env files
+.conda/
+.condarc
+.env
+.env.*
+.envrc
+# Jupyter
+.ipynb_checkpoints/
+
+# Dataset / large data files (ignore dataset directories and common large formats)
+cifar-10-batches-py/
+323venv/
+data/
+datasets/
+raw_data/
+processed_data/
+dataset/
+*/data/
+*/datasets/
+*.csv
+*.tsv
+*.parquet
+*.tfrecord
+*.record
+*.h5
+*.hdf5
+*.npy
+*.npz
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.gz
+*.7z
+*.rar
+
+# Model artifacts & checkpoints
+models/
+checkpoints/
+weights/
+outputs/
+*.ckpt
+*.pt
+*.pth
+*.weights
+*.pb
+*.onnx
+
+# Logs / runs / experiment tracking
+logs/
+run/
+runs/
+tensorboard/
+mlruns/
+results/
+predictions/
+*.log
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Caches
+.cache/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDE / editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+# Local git exclude (optional): uncomment to keep dataset out of commits locally
+# .git/info/exclude can also be used for local-only ignores
