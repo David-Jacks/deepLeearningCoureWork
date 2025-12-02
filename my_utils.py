@@ -1,9 +1,8 @@
 #making neccesary imports
-
 import pickle as pk
 import numpy as np
 import os
-
+import matplotlib.pyplot as plt
 
 
 # function to to extract data from dataset and filter samples to contain only the first 5 classes.
@@ -13,7 +12,7 @@ def filterSample(data_path: str):
 
     base_name = os.path.basename(data_path)
 
-    # Single test batch
+    # this path is for the single test batch in the dataset
     if "test_batch" in base_name:
         with open(data_path, "rb") as fo:
             img_dict = pk.load(fo, encoding="bytes")
@@ -23,9 +22,11 @@ def filterSample(data_path: str):
             if image_label[i] <= 4:
                 new_img_data.append(image_data[i])
                 new_img_label.append(image_label[i])
-    # Collect all five training data_batch_1..5 from same directory
+
+    # I want to make surei collect all five training data_batch_1..5 to use for training
     elif "data_batch" in base_name:
         dirn = os.path.dirname(data_path)
+        # print(dirn)
         for idx in range(1, 6):
             file_path = os.path.join(dirn, f"data_batch_{idx}")
             with open(file_path, "rb") as fo:
@@ -37,7 +38,7 @@ def filterSample(data_path: str):
                     new_img_data.append(image_data[j])
                     new_img_label.append(image_label[j])
     else:
-        # Fallback: try to open the given path as a single batch file
+        #trying to open the given path as a single batch file
         with open(data_path, "rb") as fo:
             img_dict = pk.load(fo, encoding="bytes")
         image_data = img_dict[b'data']
@@ -46,6 +47,7 @@ def filterSample(data_path: str):
             if image_label[i] <= 4:
                 new_img_data.append(image_data[i])
                 new_img_label.append(image_label[i])
+
     # normalising my training data within the range of 0 to 1, because the pixel values ranges from 0 to 255
     new_img_data = np.array(new_img_data, dtype=np.float32) / 255
     new_img_label = np.array(new_img_label, dtype=np.int64)
@@ -80,11 +82,27 @@ def act_softmax(input):
 
 #function to calculate the loss of a model
 def loss_fnc(pred_res, act_res):
-    # we want to make sure to prevent the loss getting to 0, or else it will affect the learning
-    # so we clip it
+    # I want to make sure to prevent the loss getting to 0, or else it will affect the learning
+    # so I will clip the predicted responses from the output layer
     pred_res = np.clip(pred_res, 1e-7, 1-1e-7)
 
     loss_value = -np.log(pred_res[range(len(pred_res)), act_res])
     return np.mean(loss_value)
+
+
+def plot_fn(tr_df=None, val_df=None, model_type:str=""):
+    df_train = tr_df
+    df_val = val_df
+
+    if df_train is not None and not df_train.empty:
+        plt.plot(df_train['epoch'], df_train['loss'], marker='o', linestyle='-', linewidth=1, label='train loss')
+    if df_val is not None and not df_val.empty:
+        plt.plot(df_val['epoch'], df_val['val_loss'], marker='x', linestyle='--', linewidth=1, label='val loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title(f'Loss Curves for {model_type} Model')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
 

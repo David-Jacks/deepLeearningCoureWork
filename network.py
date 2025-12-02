@@ -13,16 +13,13 @@ class network_model:
         self.label = Y_train
         self.lay_par = defaultdict(None)
         self.loss_by_epochs = []
+        self.val_loss_by_epochs = []
         self.nue_nums = nueron_num_arr
-        # optimizer support: 'sgd' (default) or 'adam'
         self.optimizer = optimizer
         self.opt_state = {}
-        # L2 regularization strength (lambda)
         self.l2_lambda = l2_lambda
-        # Dropout rate (probability to drop a neuron in hidden layers)
         self.dropout_rate = dropout_rate
-        self.training = True  # flag to control dropout (True for training, False for eval)
-        # BatchNorm momentum for running statistics
+        self.training = True  # flag to control dropout: this will be True for training, false for testing as we want all neurons active during testing and train validation also
         self.bn_momentum = 0.9
         self.use_batchnorm = use_batchnorm
 
@@ -133,8 +130,9 @@ class network_model:
     # function to calculate loss
     def cal_loss(self):
         base_loss = loss_fnc(pred_res=self.lay_par[f"act_lay${self.hidden_layers+1}_out"], act_res=self.label)
+
         # add L2 regularization term (lambda / (2m)) * sum(W^2)
-        if self.l2_lambda and self.l2_lambda > 0:
+        if self.l2_lambda and self.l2_lambda > 0:# If i set my l2_lamba to 0, the model that is being called will not make use of weight decay
             m = self.data.shape[0]
             reg_sum = 0.0
             for i in range(self.hidden_layers + 1):
@@ -300,9 +298,7 @@ class network_model:
 
     # function to train
     def train_model(self, iterations, lr, val_data=None, val_label=None, patience=10, batch_size=64):
-        """Train the network for `iterations` epochs using mini-batches.
-        `batch_size` default is 64; `iterations` remains number of epochs.
-        """
+      
         self.layerInitialising(self.nue_nums)
 
         best_val_loss = float('inf')
@@ -350,6 +346,8 @@ class network_model:
                     self.label = val_label
                     self.for_prop()
                     val_loss = self.cal_loss()
+                    # track validation loss for this epoch
+                    self.val_loss_by_epochs.append(val_loss)
                 finally:
                     self.data = old_data
                     self.label = old_label
@@ -403,3 +401,43 @@ class network_model:
             self.label = old_label
             self.training = old_training
         return output
+    
+    def conf_matr(self, y_pred, y_true=None, labels=None):
+        if y_true is None:
+            y_true = self.label
+
+        y_true = np.asarray(y_true).astype(int)
+        y_pred = np.asarray(y_pred)
+        # this is to make sure i am getting the models predictions, because the test outputs contains the probabilities the model pridected, 
+        # and has not been turned into acurate class guessing for each image sample
+        y_pred = np.argmax(y_pred, axis=1)
+        # determine class set / ordering
+        if labels is None:
+            classes = np.union1d(np.unique(y_true), np.unique(y_pred))
+        else:
+            classes = np.asarray(labels)
+
+        idx = {int(c): i for i, c in enumerate(classes)}
+        n = len(classes)
+        conf = np.zeros((n, n), dtype=np.int64)
+
+        for t, p in zip(y_true, y_pred):
+            t = int(t)
+            p = int(p)
+            if t in idx and p in idx:
+                conf[idx[t], idx[p]] += 1
+
+        return conf, classes
+    
+    def gen_train_loss_curve(self):
+        epochs = np.arange(1, len(self.loss_by_epochs) + 1)
+        loss_values = np.array(self.loss_by_epochs)
+        df = pd.DataFrame({'epoch': epochs, 'loss': loss_values})
+        return df
+    
+    #this function generates the validation loss curve df for plotting
+    def gen_val_loss_curve(self):
+        epochs = np.arange(1, len(self.val_loss_by_epochs) + 1)
+        loss_values = np.array(self.val_loss_by_epochs)
+        df = pd.DataFrame({'epoch': epochs, 'val_loss': loss_values})
+        return df
