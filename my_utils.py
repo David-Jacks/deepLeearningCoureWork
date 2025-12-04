@@ -4,9 +4,21 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
+# path to the cifar-10 dataset and the test sample batch
+# please make sure these paths are correct before running the code
+# and do not worry about weather I am passing all the data since you can only see the data_batch_1 path here
+# but inside the filterSample function I am making sure to collect all five training batches for training
+
+cifer_data_path = "./cifar-10-batches-py/data_batch_1"
+test_cifer_data_path = "./cifar-10-batches-py/test_batch"
 
 # function to to extract data from dataset and filter samples to contain only the first 5 classes.
-def filterSample(data_path: str):
+def filterSample(test: bool=False):
+    if test:
+        data_path = test_cifer_data_path
+    else:
+        data_path = cifer_data_path
+
     new_img_data = []
     new_img_label = []
 

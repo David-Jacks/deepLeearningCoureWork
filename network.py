@@ -2,8 +2,13 @@
 
 import numpy as np
 import pandas as pd
+import random
 from collections import defaultdict
 from my_utils import act_softmax, act_relu, loss_fnc, relu_deriv
+
+# adding random seed for reproducibility 
+np.random.seed(14)
+random.seed(14)
 
 class network_model:
     def __init__(self, no_hid_layer, X_train, Y_train, nueron_num_arr, optimizer='sgd', l2_lambda=0.0, dropout_rate=0.5, use_batchnorm=True) -> None:

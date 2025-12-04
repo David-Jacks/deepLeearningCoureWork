@@ -10,15 +10,13 @@ cifer_data_path = "./cifar-10-batches-py/data_batch_1"
 test_cifer_data_path = "./cifar-10-batches-py/test_batch"
 
 #X_train_data, Y_train_data are the features and labels respectively for training
-X_train_data, Y_train_data = filterSample(data_path=cifer_data_path)
+X_train_data, Y_train_data = filterSample(test=False)
+print("Shape of training data is:", X_train_data.shape)
 
-#X_test_data, Y_test_data are the features and labels respectively for testing
-X_test_data, Y_test_data = filterSample(data_path=test_cifer_data_path)
-
-# use last 5k samples as validation (if dataset is 25k samples)
+#setting the validation size to be 30% of the training data
 val_size =  int(0.3 * X_train_data.shape[0])
-print("Total training samples are:", X_train_data.shape[0])
-print("Validation size is:", val_size)
+# print("Total training samples are:", X_train_data.shape[0])
+# print("Validation size is:", val_size)
 X_val = X_train_data[-val_size:]
 Y_val = Y_train_data[-val_size:]
 X_tr = X_train_data[:-val_size]
@@ -28,7 +26,7 @@ Y_tr = Y_train_data[:-val_size]
 my_multilayer_model = network_model(X_train=X_tr, Y_train=Y_tr, no_hid_layer=3, nueron_num_arr=nueron_num_array, use_batchnorm=False, dropout_rate=0)
 
 #training
-my_multilayer_model.train_model(iterations=100, lr=0.01, val_data=X_val, val_label=Y_val, batch_size=64, patience=5)
+my_multilayer_model.train_model(iterations=100, lr=0.001, val_data=X_val, val_label=Y_val, batch_size=128, patience=5)
 
 # calculating accuracy
 acc = my_multilayer_model.cal_accuracy()
@@ -43,8 +41,8 @@ print(f"Model accuracy is: {acc}%")
 print(f"Model loss is: {loss}")
 
 # testing my model
-X_test, Y_test = filterSample(data_path=test_cifer_data_path)
-
+X_test, Y_test = filterSample(test=True)
+print("Shape of test data is:", X_test.shape)
 # this the predictions we got from the model after presenting the test data to it
 test_output = my_multilayer_model.test_model(X_test)
 
@@ -56,7 +54,7 @@ print(f"Test accuracy is: {test_acc}%")
 my_matrix = my_multilayer_model.conf_matr(test_output, Y_test)
 
 print("Confusion Matrix:")
-print(my_matrix)
+print(my_matrix[0])
 
 # printing the training loss curve
 train_loss_df = my_multilayer_model.gen_train_loss_curve()

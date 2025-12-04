@@ -1,0 +1,13 @@
+You will need to have these libraries before you can run the python files:
+- pandas
+- matplotlib
+- numpy
+
+What I recommend: 
+first create a vitual environment
+install the above libraries in that environment
+go ahead and run the files
+
+Note: 
+The dataset used for the training was not added to the submission
+Hence it is expected that you get access to the data and just pass it to variables that store the path in the my_utils.py file
